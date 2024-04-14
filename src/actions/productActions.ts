@@ -203,7 +203,7 @@ export async function addProduct(productDetails: any) {
 
 }
 
-//Adding to product_categories
+//Adding pid to product categories
 export async function addProdctCategories(pid, cids) {
   try {
     for (const cid of cids) {
@@ -224,7 +224,7 @@ export async function addProdctCategories(pid, cids) {
 
   }
 }
-
+// Edit Product 
 export async function editProduct(productDetails: any, pid: number) {
   try {
 
@@ -278,3 +278,26 @@ export async function editProduct(productDetails: any, pid: number) {
 
 
 }
+
+export async function sortByProducts(order){
+
+  try {
+    const result =await db
+    .selectFrom('products')
+    .selectAll() 
+    .orderBy('price', order) 
+    .limit(10)
+    .execute();
+    return result
+
+
+  } 
+  catch (error) {
+    console.error('Error occurred:', error);
+    throw error;
+  }
+
+
+}
+
+
