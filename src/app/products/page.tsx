@@ -21,7 +21,8 @@ export default async function Products({
   );
   let filteredProducts;
   let {sortBy}=searchParams
-  let order=sortBy.split('-')[1]
+  let order=sortBy.split('-')
+  console.log("sortby",order)
 
   // Sortting products
   const response=await sortByProducts(order)

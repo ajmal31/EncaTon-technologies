@@ -279,13 +279,14 @@ export async function editProduct(productDetails: any, pid: number) {
 
 }
 
-export async function sortByProducts(order){
+//Ascending or Descending Dynamic Sorting
+export async function sortByProducts(order:Array){
 
   try {
     const result =await db
     .selectFrom('products')
     .selectAll() 
-    .orderBy('price', order) 
+    .orderBy(order[0], order[1]) 
     .limit(10)
     .execute();
     return result
