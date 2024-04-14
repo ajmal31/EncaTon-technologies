@@ -11,7 +11,7 @@ import { useRouter } from "next/router";
 import { cache } from "react";
 import { getCategoryIds } from "./categoryActions";
 import { getBrandsIds } from "./brandActions";
-import { revalidatePath } from "next/cache";
+
 
 export async function getProducts(pageNo = 1, pageSize = DEFAULT_PAGE_SIZE) {
   try {
@@ -192,11 +192,9 @@ export async function addProduct(productDetails: any) {
 
     console.log("response after inserting to mySql", response)
     let pid = response.insertId
-    let response2=await addProdctCategories(pid,categorieIds)
-    console.log("returned the controll")
-    revalidatePath('/products')
-    return true
-    
+    let response2 = await addProdctCategories(pid, categorieIds)
+    return "product Added"
+
 
   } catch (err) {
     console.log("Error occured while inserting data into my sql", err)
@@ -218,11 +216,65 @@ export async function addProdctCategories(pid, cids) {
 
     }
 
-     return true
+    return true
 
   } catch (error) {
 
     console.log(`Error occured while addinng productCategories : ${error}`)
 
   }
+}
+
+export async function editProduct(productDetails: any, pid: number) {
+  try {
+
+    const { name, description, old_price, price, discount, rating, colors, brands, categories, gender, occasion, image_url } = productDetails
+    const categoriesArr = []
+    const brandsArr = []
+    const occasionArr = []
+
+    for (const val of categories) {
+      categoriesArr.push(val.label)
+    }
+    for (const val of brands) {
+      brandsArr.push(val.label)
+    }
+    for (const val of occasion) {
+      occasionArr.push(val.label)
+    }
+
+    const categorieIds = await getCategoryIds(categoriesArr)
+    const brandIds = await getBrandsIds(brandsArr)
+
+    const updateData = {
+      name: name,
+      description: description,
+      old_price: old_price,
+      price: price,
+      discount: discount,
+      rating: rating,
+      colors: colors,
+      brands: JSON.stringify(brandIds),
+      gender: gender,
+      occasion: occasionArr.join(','),
+
+    }
+    if (image_url.length !== 0) {
+
+      updateData.image_url = image_url
+    } else {
+      console.log(image_url)
+    }
+
+    const response = await db.updateTable("products").set(updateData).where('id', "=", pid).executeTakeFirst()
+
+    console.log(`after editing ${pid} product and response ${response}`)
+    return "product edited"
+
+  } catch (error) {
+
+    throw error
+  }
+
+
 }

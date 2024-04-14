@@ -7,6 +7,7 @@ import { getCategories } from "@/actions/categoryActions";
 import { getBrands } from "@/actions/brandActions";
 import {
   MapBrandIdsToName,
+  editProduct,
   getProduct,
   getProductCategories,
   updateProduct,
@@ -61,7 +62,9 @@ function EditProduct({ params }: { params: { id: string } }) {
     validationSchema: basicSchema,
 
     onSubmit: async (values, actions) => {
-      alert("Please update the code.");
+      const response=await editProduct(values,id)
+      if(response) router.push("/products")
+
     },
   });
 
