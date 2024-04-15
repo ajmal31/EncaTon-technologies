@@ -28,9 +28,8 @@ const router = useRouter();
     const selectedValue = e.target.value;
     setSelectedOption(selectedValue);
  
-    console.log("selected value",selectedValue)
-    // Update query parameter in URL
     const queryParams = new URLSearchParams(searchParams.toString());
+    
     if (selectedValue) {
       queryParams.set("sortBy", selectedValue);
     } else {

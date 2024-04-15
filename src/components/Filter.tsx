@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter,useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 // import Select from "react-select";
 import { MultiSelect } from "react-multi-select-component";
@@ -10,7 +10,9 @@ import { occasionOptions } from "../../constant";
 import { useMemo } from "react";
 import dynamic from "next/dynamic";
 import { useQueryParams } from "@/hooks/useQueryParams";
+
 const Select = dynamic(() => import("react-select"), { ssr: false });
+
 
 const discountOptions = [
   { value: "", label: "None" },
@@ -20,6 +22,7 @@ const discountOptions = [
 ];
 
 function Filter({ categories, brands }) {
+  const params= useSearchParams()
   const searchParams = useQueryParams();
   const router = useRouter();
 
@@ -126,7 +129,18 @@ function Filter({ categories, brands }) {
   }, [sliderValue]);
 
   function handleBrandsSelect(e) {
-    alert("Please update the code.");
+
+
+    const searchParams=new URLSearchParams(params)
+    let selectedBrand=e[0]?.label
+
+    const queryParams=new URLSearchParams(searchParams.toString())
+
+    queryParams.set("brands",selectedBrand)
+
+    router.replace(`/products?${queryParams.toString()}`)
+
+    
   }
 
   function handleCategoriesSelected(e) {

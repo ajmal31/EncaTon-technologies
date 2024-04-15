@@ -1,4 +1,4 @@
-import { getProducts, sortByProducts } from "@/actions/productActions";
+import { getProducts, sortByOrder } from "@/actions/productActions";
 import { DEFAULT_PAGE_SIZE } from "../../../constant";
 import PaginationSection from "@/components/PaginationSection";
 import SortBy from "@/components/SortBy";
@@ -19,16 +19,22 @@ export default async function Products({
     +page,
     +pageSize
   );
+
   let filteredProducts;
-  let {sortBy}=searchParams
-  let order=sortBy.split('-')
-  console.log("sortby",order)
-
-  // Sortting products
-  const response=await sortByProducts(order)
-
+  let response
+  let { sortBy } = searchParams
+  if(sortBy)
+    {
+      let order = sortBy?.split('-')
+      
+      if (order) {
+        // Dynamic Sorting Based on order
+        response = await sortByOrder(order)
+    
+      }
+    }
   
-  filteredProducts=response
+  filteredProducts = response
   const brands = await getBrands();
   const categories = await getCategories();
 
@@ -47,7 +53,7 @@ export default async function Products({
         fallback={<p className="text-gray-300 text-2xl">Loading Products...</p>}
       >
         <ProductTable
-          products={filteredProducts??products}
+          products={filteredProducts ?? products}
           numOfResultsOnCurPage={numOfResultsOnCurPage}
         />
       </Suspense>

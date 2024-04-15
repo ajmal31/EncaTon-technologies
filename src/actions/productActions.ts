@@ -158,21 +158,20 @@ export async function getProductCategories(productId: number) {
 export async function addProduct(productDetails: any) {
 
   try {
-    const { name, description, old_price, price, discount, rating, colors, brands, categories, gender, occasion, image_url } = productDetails
-    const categoriesArr = []
-    const brandsArr = []
-    const occasionArr = []
-    for (const val of categories) {
-      categoriesArr.push(val.label)
-    }
-    for (const val of brands) {
-      brandsArr.push(val.label)
-    }
-    for (const val of occasion) {
-      occasionArr.push(val.label)
-    }
-    const categorieIds = await getCategoryIds(categoriesArr)
-    const brandIds = await getBrandsIds(brandsArr)
+
+    const { name, description, old_price, price, discount, rating, colors, brands, categories, gender, occasion, image_url } = productDetails;
+
+    const [categoriesArr, brandsArr, occasionArr] = await Promise.all([
+      Promise.all(categories.map((val: any) => val.label)),
+      Promise.all(brands.map((val: any) => val.label)),
+      Promise.all(occasion.map((val: any) => val.label))
+    ]);
+
+    const [categorieIds, brandIds] = await Promise.all([
+      getCategoryIds(categoriesArr),
+      getBrandsIds(brandsArr)
+    ]);
+
 
     let response = await db.insertInto("products").values({
       name: name,
@@ -182,15 +181,12 @@ export async function addProduct(productDetails: any) {
       discount: discount,
       rating: rating,
       colors: colors,
-      // Store brandIds as an array
       brands: JSON.stringify(brandIds),
       gender: gender,
-      // Convert occasionArr array to a comma-separated string
       occasion: occasionArr.join(','),
       image_url: image_url
     }).executeTakeFirst();
 
-    console.log("response after inserting to mySql", response)
     let pid = response.insertId
     let response2 = await addProdctCategories(pid, categorieIds)
     return "product Added"
@@ -227,60 +223,53 @@ export async function addProdctCategories(pid, cids) {
 // Edit Product 
 export async function editProduct(productDetails: any, pid: number) {
   try {
+    const { name, description, old_price, price, discount, rating, colors, brands, categories, gender, occasion, image_url } = productDetails;
 
-    const { name, description, old_price, price, discount, rating, colors, brands, categories, gender, occasion, image_url } = productDetails
-    const categoriesArr = []
-    const brandsArr = []
-    const occasionArr = []
+    const [categoriesArr, brandsArr, occasionArr] = await Promise.all([
+      Promise.all(categories.map((val: any) => val.label)),
+      Promise.all(brands.map((val: any) => val.label)),
+      Promise.all(occasion.map((val: any) => val.label))
+    ]);
 
-    for (const val of categories) {
-      categoriesArr.push(val.label)
-    }
-    for (const val of brands) {
-      brandsArr.push(val.label)
-    }
-    for (const val of occasion) {
-      occasionArr.push(val.label)
-    }
+    const [categorieIds, brandIds] = await Promise.all([
+      getCategoryIds(categoriesArr),
+      getBrandsIds(brandsArr)
+    ]);
 
-    const categorieIds = await getCategoryIds(categoriesArr)
-    const brandIds = await getBrandsIds(brandsArr)
-
-    const updateData = {
-      name: name,
-      description: description,
-      old_price: old_price,
-      price: price,
-      discount: discount,
-      rating: rating,
-      colors: colors,
+    const updateData: any = {
+      name,
+      description,
+      old_price,
+      price,
+      discount,
+      rating,
+      colors,
       brands: JSON.stringify(brandIds),
-      gender: gender,
-      occasion: occasionArr.join(','),
+      gender,
+      occasion: occasionArr.join(',')
+    };
 
-    }
     if (image_url.length !== 0) {
-
-      updateData.image_url = image_url
+      updateData.image_url = image_url;
     } else {
-      console.log(image_url)
+      console.log(image_url);
     }
 
-    const response = await db.updateTable("products").set(updateData).where('id', "=", pid).executeTakeFirst()
+    const response = await db.updateTable("products")
+      .set(updateData)
+      .where('id', "=", pid)
+      .executeTakeFirst();
 
-    console.log(`after editing ${pid} product and response ${response}`)
-    return "product edited"
-
+    console.log(`after editing ${pid} product and response ${response}`);
+    return "product edited";
   } catch (error) {
-
-    throw error
+    throw error;
   }
-
-
 }
 
+
 //Ascending or Descending Dynamic Sorting
-export async function sortByProducts(order:Array){
+export async function sortByOrder(order:Array){
 
   try {
     const result =await db
@@ -301,4 +290,25 @@ export async function sortByProducts(order:Array){
 
 }
 
+// Sort Based on Brands
+export async function sortByBrands(brandName){
+
+  try {
+    const result =await db
+    .selectFrom('brands')
+    .selectAll() 
+    .where("brands.name","=",brandName) 
+    .limit(10)
+    .execute();
+    return result
+
+
+  } 
+  catch (error) {
+    console.error('Error occurred:', error);
+    throw error;
+  }
+
+
+}
 
